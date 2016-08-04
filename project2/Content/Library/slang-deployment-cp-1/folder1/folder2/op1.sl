@@ -1,11 +1,11 @@
-namespace: slang-deployment-cp-4
+namespace: slang-deployment-cp-1.folder1.folder2
 
 operation:
-  name: op4
+  name: op1
   inputs:
     - text
-  action:
-    python_script: |
+  python_action:
+    script: |
       returnResult="Wow man"
       print text
   outputs:
