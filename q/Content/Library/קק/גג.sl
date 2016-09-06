@@ -5,7 +5,13 @@ flow:
     - שדגכ:
         do:
           ש.שדגכ: []
-        navigate: []
+        navigate: 
+			- SUCCESS: on_failure
+	- on_failure:
+		- failure:
+			do:
+				print:
+					- text: ${error_msg}
   results: []
 extensions:
   graph:
