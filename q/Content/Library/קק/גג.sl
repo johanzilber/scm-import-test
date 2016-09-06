@@ -1,4 +1,4 @@
-namespace: qq
+﻿namespace: qq
 flow:
   name: qqq
   workflow:
@@ -6,12 +6,12 @@ flow:
         do:
           ש.שדגכ: []
         navigate: 
-		  - SUCCESS: on_failure
+	  - SUCCESS: on_failure
     - on_failure:
-	  - failure:
-	    do:
-		  print:
-		    - text: ${error_msg}
+      - failure:
+        do:
+          print:
+            - text: ${error_msg}
   results: []
 extensions:
   graph:
