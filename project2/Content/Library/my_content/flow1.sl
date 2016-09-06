@@ -7,7 +7,7 @@ flow:
           my_content.flow1: []
         navigate:
           - FAILURE: SUCCESS
-          - SUCCESS: on_failure
+          - SUCCESS: SUCCESS
     - on_failure:
         - flow1_1:
             do:
