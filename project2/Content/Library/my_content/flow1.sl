@@ -2,7 +2,7 @@ namespace: my_content
 flow:
   name: flow11
   workflow:
-    - flow11:
+    - flow1:
         do:
           my_content.flow11: []
         navigate:
@@ -18,9 +18,9 @@ flow:
 extensions:
   graph:
     steps:
-      flow11:
-        x: 100
-        y: 150
+      flow1:
+        x: 109
+        y: 156
         navigate:
           b1a2fc4c-fba4-5534-4bb7-58695f1e6481:
             targetId: ec31ac92-a080-fd0b-62a3-fa268dcd6630
