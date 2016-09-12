@@ -43,126 +43,157 @@
 ########################################################################################################################
 
 namespace: io.cloudslang.base.ssh
-
 imports:
   linux: io.cloudslang.base.os.linux
   utils: io.cloudslang.base.utils
   ssh: io.cloudslang.base.ssh
-
 flow:
-    name: ssh_flow
-    inputs:
-      - host
-      - port: '22'
-      - command
-      - pty: 'false'
-      - username
-      - password:
-          required: false
-          sensitive: true
-      - arguments:
-          required: false
-      - private_key_file:
-          required: false
-      - privateKeyFile:
-          default: ${get("private_key_file", "")}
-          required: false
-          private: true
-      - timeout: '90000'
-      - character_set:
-          required: false
-      - characterSet:
-          default: ${get("character_set", "UTF-8")}
-          private: true
-      - close_session:
-          required: false
-      - closeSession:
-          default: ${get("close_session", "false")}
-          private: true
-      - agent_forwarding:
-          required: false
-      - agentForwarding:
-          default: ${get("agent_forwarding", "")}
-          required: false
-          private: true
-      - smart_recovery: True
-      - retries: 5
-    workflow:
-      - validate_ssh_access:
-          do:
-            linux.validate_linux_machine_ssh_access:
-              - host
-              - port
-              - username
-              - password
-              - private_key_file
-              - arguments
-              - character_set
-              - pty
-              - timeout
-              - close_session
-              - agent_forwarding
-          publish:
+  name: ssh_flow
+  inputs:
+    - host
+    - port: '22'
+    - command
+    - pty: 'false'
+    - username
+    - password:
+        required: false
+        sensitive: true
+    - arguments:
+        required: false
+    - private_key_file:
+        required: false
+    - privateKeyFile:
+        default: '${get("private_key_file", "")}'
+        private: true
+        required: false
+    - timeout: '90000'
+    - character_set:
+        required: false
+    - characterSet:
+        default: '${get("character_set", "UTF-8")}'
+        private: true
+    - close_session:
+        required: false
+    - closeSession:
+        default: '${get("close_session", "false")}'
+        private: true
+    - agent_forwarding:
+        required: false
+    - agentForwarding:
+        default: '${get("agent_forwarding", "")}'
+        private: true
+        required: false
+    - smart_recovery: true
+    - retries: 5
+  workflow:
+    - validate_ssh_access:
+        do:
+          linux.validate_linux_machine_ssh_access:
+            - host
+            - port
+            - username
+            - password
+            - private_key_file
+            - arguments
+            - character_set
+            - pty
+            - timeout
+            - close_session
+            - agent_forwarding
+        publish:
+          - return_result
+          - return_code
+          - standard_out
+          - standard_err
+          - exception
+          - exit_status
+        navigate:
+          - SUCCESS: ssh_command
+          - FAILURE: handle_ssh_session_recovery
+    - ssh_command:
+        do:
+          ssh.ssh_command:
+            - host
+            - port
+            - username
+            - password
+            - private_key_file
+            - command
+            - arguments
+            - character_set
+            - pty
+            - timeout
+            - close_session
+            - agent_forwarding
+        publish:
+          - return_result
+          - standard_out
+          - standard_err
+          - return_code
+          - exception
+          - exit_status: '${ command_return_code }'
+        navigate:
+          - SUCCESS: SUCCESS
+          - FAILURE: handle_ssh_session_recovery
+    - handle_ssh_session_recovery:
+        do:
+          utils.handle_session_recovery:
+            - enabled: '${ smart_recovery }'
+            - retries
             - return_result
             - return_code
-            - standard_out
-            - standard_err
-            - exception
             - exit_status
-          navigate:
-            - SUCCESS: ssh_command
-            - FAILURE: handle_ssh_session_recovery
-
-      - ssh_command:
-          do:
-            ssh.ssh_command:
-              - host
-              - port
-              - username
-              - password
-              - private_key_file
-              - command
-              - arguments
-              - character_set
-              - pty
-              - timeout
-              - close_session
-              - agent_forwarding
-          publish:
-            - return_result
-            - standard_out
-            - standard_err
-            - return_code
-            - exception
-            - exit_status: ${ command_return_code }
-          navigate:
-            - SUCCESS: SUCCESS
-            - FAILURE: handle_ssh_session_recovery
-
-      - handle_ssh_session_recovery:
-          do:
-            utils.handle_session_recovery:
-              - enabled: ${ smart_recovery }
-              - retries
-              - return_result
-              - return_code
-              - exit_status
-          publish:
-            - retries: ${updated_retries}
-          navigate:
-            - RECOVERY_DISABLED: FAILURE
-            - TIMEOUT: FAILURE
-            - SESSION_IS_DOWN: validate_ssh_access
-            - FAILURE_WITH_NO_MESSAGE: validate_ssh_access
-            - CUSTOM_FAILURE: validate_ssh_access
-            - NO_ISSUE_FOUND: FAILURE
-    outputs:
-      - return_result
-      - standard_out
-      - standard_err
-      - exception
-      - command_return_code: ${ exit_status }
-      - return_code
+        publish:
+          - retries: '${updated_retries}'
+        navigate:
+          - RECOVERY_DISABLED: FAILURE
+          - TIMEOUT: FAILURE
+          - SESSION_IS_DOWN: validate_ssh_access
+          - FAILURE_WITH_NO_MESSAGE: validate_ssh_access
+          - CUSTOM_FAILURE: validate_ssh_access
+          - NO_ISSUE_FOUND: FAILURE
+  outputs:
+    - return_result
+    - standard_out
+    - standard_err
+    - exception
+    - command_return_code: '${ exit_status }'
+    - return_code
+  results:
+    - SUCCESS
+    - FAILURE
+extensions:
+  graph:
+    steps:
+      validate_ssh_access:
+        x: 78
+        y: 238
+      ssh_command:
+        x: 400
+        y: 125
+        navigate:
+          4efe73ec-4eaf-d504-2fc4-a0f8f543d5d8:
+            targetId: bdd2b789-9ca5-701c-7745-8f9f6405bb62
+            port: SUCCESS
+      handle_ssh_session_recovery:
+        x: 400
+        y: 375
+        navigate:
+          c3ed2b86-bbda-7c32-2281-dfdf4d32a91b:
+            targetId: 1dc60964-61c6-1561-09fa-caa5fde76591
+            port: RECOVERY_DISABLED
+          7b3cf256-3ab6-1fb6-ffbc-9dd54d69be58:
+            targetId: 1dc60964-61c6-1561-09fa-caa5fde76591
+            port: TIMEOUT
+          34b17e04-3768-2a5b-7e18-ecfb294492be:
+            targetId: 1dc60964-61c6-1561-09fa-caa5fde76591
+            port: NO_ISSUE_FOUND
     results:
-      - SUCCESS
-      - FAILURE
+      SUCCESS:
+        bdd2b789-9ca5-701c-7745-8f9f6405bb62:
+          x: 700
+          y: 125
+      FAILURE:
+        1dc60964-61c6-1561-09fa-caa5fde76591:
+          x: 700
+          y: 375
