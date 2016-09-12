@@ -19,7 +19,7 @@ extensions:
   graph:
     steps:
       flow1:
-        x: 109
+        x: 110
         y: 156
         navigate:
           b1a2fc4c-fba4-5534-4bb7-58695f1e6481:
