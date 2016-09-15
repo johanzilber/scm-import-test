@@ -31,5 +31,5 @@ extensions:
     results:
       SUCCESS:
         ec31ac92-a080-fd0b-62a3-fa268dcd6630:
-          x: 400
-          y: 150
+          x: 401
+          y: 151
